@@ -87,19 +87,27 @@ ContactTreeWidget::ContactTreeWidget(QWidget *parent) : QTreeWidget(parent), _de
     std::vector<FriendRequest> friendrequests = DatabaseManager::getNewFriendRequests(uid);
     for(auto& friendrequest: friendrequests){
         int sender_id = friendrequest.sender_id;
-        DbUserInfo sender_info = DatabaseManager::getUserInfoByUid(sender_id);
-        CacheManager::getInstance().putUserInfo(sender_info);
-        NewFriendReqInfo info(sender_info.uid, sender_info.name, sender_info.icon);
-        addNewFriendSubItem(info);
+        DbUserInfo sender_info;
+        auto sender_info_opt = DatabaseManager::getUserInfoByUid(sender_id);
+        if(sender_info_opt.has_value()){
+            sender_info = sender_info_opt.value();
+            CacheManager::getInstance().putUserInfo(sender_info);
+            NewFriendReqInfo info(sender_info.uid, sender_info.name, sender_info.icon);
+            addNewFriendSubItem(info);
+        }
     }
 
     std::vector<FriendRequest> myfriendapplications =  DatabaseManager::getMyFriendRequests(uid);
     for(auto& myapply : myfriendapplications){
         int receiver_id = myapply.receiver_id;
-        DbUserInfo receiver_info = DatabaseManager::getUserInfoByUid(receiver_id);
-        CacheManager::getInstance().putUserInfo(receiver_info);
-        MyApplyRspInfo info(receiver_info.uid, receiver_info.name, receiver_info.icon, myapply.status);
-        addMyApplysSubItem(info);
+        DbUserInfo receiver_info;
+        auto receiver_info_opt = DatabaseManager::getUserInfoByUid(receiver_id);
+        if(receiver_info_opt.has_value()){
+            receiver_info = receiver_info_opt.value();
+            CacheManager::getInstance().putUserInfo(receiver_info);
+            MyApplyRspInfo info(receiver_info.uid, receiver_info.name, receiver_info.icon, myapply.status);
+            addMyApplysSubItem(info);
+        }
     }
 
     QVector<qint64> friendids = DatabaseManager::getAllFriendIds();

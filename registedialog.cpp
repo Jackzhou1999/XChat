@@ -13,13 +13,128 @@ RegisteDialog::RegisteDialog(QWidget *parent)
     ui->err_tip->setProperty("state", "normal");
     repolish(ui->err_tip);
     _countdown_timer = new QTimer(this);
-    ui->password_edit->setPlaceholderText(tr("密码须包含字母和数字且长度>6"));
+
+    QAction *userAction = new QAction(ui->user_edit);
+    QPixmap pixmap(":/res/user.png");
+    userAction->setIcon(QIcon(pixmap.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    ui->user_edit->addAction(userAction, QLineEdit::LeadingPosition);
+    ui->user_edit->setPlaceholderText(tr("用户名"));
+    ui->user_edit->setPlaceholderOffset(35, 9);
+    QAction *clearuserAction = new QAction(ui->user_edit);
+    clearuserAction->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->user_edit->addAction(clearuserAction, QLineEdit::TrailingPosition);
+    connect(ui->user_edit, &CustomLineEdit::textChanged, [this, clearuserAction](const QString& text){
+        if(!text.isEmpty()){
+            clearuserAction->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearuserAction->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearuserAction, &QAction::triggered, [this, clearuserAction](){
+        ui->user_edit->clear();
+        clearuserAction->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->user_edit->clearFocus();
+    });
+
+    QAction *emailAction = new QAction(ui->email_edit);
+    QPixmap pixmap2(":/res/email.png");
+    emailAction->setIcon(QIcon(pixmap2.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    ui->email_edit->addAction(emailAction, QLineEdit::LeadingPosition);
+    ui->email_edit->setPlaceholderText(tr("邮箱"));
+    ui->email_edit->setPlaceholderOffset(35, 9);
+    QAction *clearemailAction = new QAction(ui->email_edit);
+    clearemailAction->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->email_edit->addAction(clearemailAction, QLineEdit::TrailingPosition);
+    connect(ui->email_edit, &CustomLineEdit::textChanged, [this, clearemailAction](const QString& text){
+        if(!text.isEmpty()){
+            clearemailAction->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearemailAction->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearemailAction, &QAction::triggered, [this, clearemailAction](){
+        ui->email_edit->clear();
+        clearemailAction->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->email_edit->clearFocus();
+    });
+
+
+    QAction *passwordAction = new QAction(ui->password_edit);
+    QPixmap pixmap3(":/res/password.png");
+    passwordAction->setIcon(QIcon(pixmap3.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    ui->password_edit->addAction(passwordAction, QLineEdit::LeadingPosition);
+    ui->password_edit->setPlaceholderText(tr("密码须包含字母和数字且长度大于6"));
+    ui->password_edit->setPlaceholderOffset(35, 9);
+    QAction * clearpasswordAction = new QAction(ui->password_edit);
+    clearpasswordAction->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->password_edit->addAction(clearpasswordAction, QLineEdit::TrailingPosition);
+    connect(ui->password_edit, &CustomLineEdit::textChanged, [this, clearpasswordAction](const QString& text){
+        if(!text.isEmpty()){
+            clearpasswordAction->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearpasswordAction->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearpasswordAction, &QAction::triggered, [this, clearpasswordAction](){
+        ui->password_edit->clear();
+        clearpasswordAction->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->password_edit->clearFocus();
+    });
+
+    QAction *passwordconfirmAction = new QAction(ui->passwordconfirm_edit);
+    QPixmap pixmap4(":/res/password.png");
+    passwordconfirmAction->setIcon(QIcon(pixmap4.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    ui->passwordconfirm_edit->addAction(passwordconfirmAction, QLineEdit::LeadingPosition);
+    ui->passwordconfirm_edit->setPlaceholderText(tr("确认密码"));
+    ui->passwordconfirm_edit->setPlaceholderOffset(35, 9);
+    QAction * clearpasswordconfirmAction = new QAction(ui->passwordconfirm_edit);
+    clearpasswordconfirmAction->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->passwordconfirm_edit->addAction(clearpasswordconfirmAction, QLineEdit::TrailingPosition);
+    connect(ui->passwordconfirm_edit, &CustomLineEdit::textChanged, [this, clearpasswordconfirmAction](const QString& text){
+        if(!text.isEmpty()){
+            clearpasswordconfirmAction->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearpasswordconfirmAction->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearpasswordconfirmAction, &QAction::triggered, [this, clearpasswordconfirmAction](){
+        ui->passwordconfirm_edit->clear();
+        clearpasswordconfirmAction->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->passwordconfirm_edit->clearFocus();
+    });
+
+    QAction *varifyAction = new QAction(ui->varify_edit);
+    QPixmap pixmap5(":/res/varify.png");
+    varifyAction->setIcon(QIcon(pixmap5.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    ui->varify_edit->addAction(varifyAction, QLineEdit::LeadingPosition);
+    ui->varify_edit->setPlaceholderText(tr("验证码"));
+    ui->varify_edit->setPlaceholderOffset(35, 9);
+    QAction * clearvarifyActionAction = new QAction(ui->varify_edit);
+    clearvarifyActionAction->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->varify_edit->addAction(clearvarifyActionAction, QLineEdit::TrailingPosition);
+    connect(ui->varify_edit, &CustomLineEdit::textChanged, [this, clearvarifyActionAction](const QString& text){
+        if(!text.isEmpty()){
+            clearvarifyActionAction->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearvarifyActionAction->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearvarifyActionAction, &QAction::triggered, [this, clearvarifyActionAction](){
+        ui->varify_edit->clear();
+        clearvarifyActionAction->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->varify_edit->clearFocus();
+    });
+
+
     ui->password_edit->setAlignment(Qt::AlignVCenter);
     ui->password_edit->setEchoMode(QLineEdit::Password);
     ui->passwordconfirm_edit->setEchoMode(QLineEdit::Password);
-
     ui->passwdword_btn->setCursor(Qt::PointingHandCursor);
     ui->passwordconform_btn->setCursor(Qt::PointingHandCursor);
+
+    ui->confirm_btn->SetState("normal", "hover", "press");
+    ui->cancel_btn->SetState("normal", "hover", "press");
+    ui->getcode_btn->SetState("normal", "hover", "press");
 
     connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_reg_mod_finished, this, &RegisteDialog::slot_reg_mod_finish);
 

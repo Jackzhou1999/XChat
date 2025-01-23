@@ -47,6 +47,10 @@ enum ReqId:uint16_t{
     ID_MSG_BACK = 1019,
 
     ID_CLOSE_FILESESSION = 1020,
+    ID_USER_SEARCH = 1021,
+
+    ID_NOTIFY_ADD_FRIEND_RSP = 1022,
+
 
     ID_HEARTBEAT = 1999,
 };
@@ -103,7 +107,6 @@ enum ListItemType{
     INVALID_ITEM,  //不可点击条目
     GROUP_TIP_ITEM, //分组提示条目
     LINE_ITEM,  //分割线
-    APPLY_FRIEND_ITEM, //好友申请
 };
 
 struct UserInfo{

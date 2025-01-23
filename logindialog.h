@@ -31,6 +31,8 @@ private:
     QTimer* _countdown_timer;
     size_t _duration;
 
+    QAction * clearAction;
+
     int _uid;
     QString _token;
 private slots:

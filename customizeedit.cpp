@@ -34,6 +34,12 @@ void CustomLineEdit::limitTextLength()
     }
 }
 
+void CustomLineEdit::slot_user_search()
+{
+    QString msg = text();
+    emit sig_user_search(msg);
+}
+
 bool CustomLineEdit::eventFilter(QObject *object, QEvent *event)
 {
     if(event->type() == QEvent::MouseButtonPress){

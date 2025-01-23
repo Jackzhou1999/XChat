@@ -6,8 +6,46 @@ GvcButton::GvcButton(QWidget *parent) {
     times = 10;
 }
 
+void GvcButton::SetState(QString normal, QString hover, QString press)
+{
+    _hover = hover;
+    _normal = normal;
+    _press = press;
+    setProperty("state", normal);
+    repolish(this);
+    update();
+}
+
+void GvcButton::enterEvent(QEnterEvent *event)
+{
+    setProperty("state", _hover);
+    repolish(this);
+    update();
+    QPushButton::enterEvent(event);
+}
+
+void GvcButton::leaveEvent(QEvent *event)
+{
+    setProperty("state", _normal);
+    repolish(this);
+    update();
+    QPushButton::leaveEvent(event);
+}
+
+void GvcButton::mousePressEvent(QMouseEvent *e)
+{
+    setProperty("state", _press);
+    repolish(this);
+    update();
+    QPushButton::mousePressEvent(e);
+}
+
 void GvcButton::mouseReleaseEvent(QMouseEvent *e)
 {
+    setProperty("state", _press);
+    repolish(this);
+    update();
+
     _timer->start(1000);
     this->setEnabled(false);
     QPushButton::mouseReleaseEvent(e);

@@ -34,10 +34,10 @@ SOURCES += \
     filebubble.cpp \
     fileclient.cpp \
     filetransferwidget.cpp \
-    findsuccessdialog.cpp \
     forgetpwddialog.cpp \
     friendlabel.cpp \
     global.cpp \
+    globalsearchpage.cpp \
     gvcbutton.cpp \
     httpmgr.cpp \
     imageviewer.cpp \
@@ -51,6 +51,10 @@ SOURCES += \
     progressbar.cpp \
     registedialog.cpp \
     searchlist.cpp \
+    searchuserfrienditem.cpp \
+    searchuseritem.cpp \
+    searchuserlist.cpp \
+    searchusernofrienditem.cpp \
     sqlmgr.cpp \
     statewidget.cpp \
     tcpmgr.cpp \
@@ -61,6 +65,7 @@ SOURCES += \
     workthread.cpp
 
 HEADERS += \
+    Semaphore.h \
     adduseritem.h \
     applyfriend.h \
     bubbleframe.h \
@@ -84,10 +89,10 @@ HEADERS += \
     filebubble.h \
     fileclient.h \
     filetransferwidget.h \
-    findsuccessdialog.h \
     forgetpwddialog.h \
     friendlabel.h \
     global.h \
+    globalsearchpage.h \
     gvcbutton.h \
     httpmgr.h \
     imageviewer.h \
@@ -101,6 +106,10 @@ HEADERS += \
     progressbar.h \
     registedialog.h \
     searchlist.h \
+    searchuserfrienditem.h \
+    searchuseritem.h \
+    searchuserlist.h \
+    searchusernofrienditem.h \
     singleton.h \
     sqlmgr.h \
     statewidget.h \
@@ -118,14 +127,17 @@ FORMS += \
     chatpage.ui \
     chatuserwid.ui \
     contactinfopage.ui \
-    findsuccessdialog.ui \
     forgetpwddialog.ui \
     friendlabel.ui \
+    globalsearchpage.ui \
     loadingdlg.ui \
     logindialog.ui \
     mainwindow.ui \
     newfriendinfopage.ui \
-    registedialog.ui
+    registedialog.ui \
+    searchuserfrienditem.ui \
+    searchuseritem.ui \
+    searchusernofrienditem.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -15,10 +15,12 @@
 #include "tcpmgr.h"
 #include <QJsonDocument>
 #include <QFileDialog>
+#include "fileclient.h"
+
 
 ChatDialog::ChatDialog(QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::ChatDialog), _mode(ChatUiMode::ChatMode), _state(ChatUiMode::ChatMode), _b_loading(false), _prev_state(ChatUiMode::ChatMode)
+    , ui(new Ui::ChatDialog), _mode(ChatUiMode::ChatMode), _state(ChatUiMode::ChatMode), _b_loading(false), _prev_state(ChatUiMode::ChatMode),_global_search_dlg(nullptr)
 {
     ui->setupUi(this);
     ui->add_btn->SetState("normal", "hover", "press");
@@ -31,7 +33,7 @@ ChatDialog::ChatDialog(QWidget *parent)
     searchAction->setIcon(QIcon(":/res/search.png"));
     ui->search_edit->addAction(searchAction, QLineEdit::LeadingPosition);
     ui->search_edit->setPlaceholderText(tr("搜索"));
-    ui->search_edit->setPlaceholderOffset(30, 3);
+    ui->search_edit->setPlaceholderOffset(35, 4);
 
     clearAction = new QAction(ui->search_edit);
     clearAction->setIcon(QIcon(":/res/close_transparent.png"));
@@ -78,6 +80,10 @@ ChatDialog::ChatDialog(QWidget *parent)
     connect(ui->con_user_list, &ContactTreeWidget::to_friendinfopage, this, &ChatDialog::slot_tofriendinfopage);
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_new_msg_arrived, this, &ChatDialog::slot_update_chat_user_item);
     connect(ui->contact_page, &contactinfopage::sig_to_chat_page, this, &ChatDialog::slot_to_chat_page);
+    connect(ui->search_list, &SearchList::to_friendinfopage, this, &ChatDialog::slot_tofriendinfopage);
+    connect(ui->search_list, &SearchList::to_globalsearchpage, this, &ChatDialog::slot_to_globalsearchpage);
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_searchfinished, this, &ChatDialog::slot_searchfinished);
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_updatefriendrequest, this, &ChatDialog::slot_updatemyapply);
 }
 
 
@@ -223,7 +229,7 @@ void ChatDialog::slot_add_chat_user_item(int uid)
     QVector<qint64> unreadids;
     int myid = UserMgr::GetInstance()->getUid_int();
     DatabaseManager::getUnreadMessageCountFromUser(uid, myid, unreadids);
-    DbUserInfo info = DatabaseManager::getUserInfoByUid(uid);
+    DbUserInfo info = DatabaseManager::getUserInfoByUid(uid).value();
 
     auto* chatuserwid = new ChatUserWid();
     chatuserwid->SetInfo(info);
@@ -254,7 +260,7 @@ void ChatDialog::slot_update_chat_user_item(int uid)
     QVector<qint64> unreadids;
 
     DatabaseManager::getUnreadMessageCountFromUser(uid, myid, unreadids);
-    DbUserInfo info = DatabaseManager::getUserInfoByUid(uid);
+    DbUserInfo info = DatabaseManager::getUserInfoByUid(uid).value();
     ChatUserWidMgr[uid]->unread_msg_ids.unite(QSet<int>(unreadids.begin(), unreadids.end()));
     std::cout << "ChatDialog::slot_update_chat_user_item" <<std::endl;
 
@@ -324,6 +330,51 @@ void ChatDialog::slot_search_list(const QString &text)
         }
         _state = ChatUiMode::SearchMode;
         ShowSearch(true);
+        ui->search_list->ClearItem();
+        QVector<qint64> uids;
+        QMap<int, DbUserInfo> userinfos;
+
+        bool isuid;
+        int uid = text.toInt(&isuid);
+        if(isuid){
+            std::optional<DbUserInfo> user = DatabaseManager::getUserInfoByUid(uid);
+            if(user.has_value()){
+                auto userinfo = user.value();
+                if(userinfos.find(userinfo.uid) == userinfos.end()){
+                    uids.push_back(userinfo.uid);
+                    userinfos[userinfo.uid] = userinfo;
+                }
+            }
+        }
+
+        static QRegularExpression regex("^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$");
+        bool isemail = regex.match(text).hasMatch();
+        if(isemail){
+            std::optional<DbUserInfo> user = DatabaseManager::getUserInfoByEmail(text);
+            if(user.has_value()){
+                auto userinfo = user.value();
+                if(userinfos.find(userinfo.uid) == userinfos.end()){
+                    uids.push_back(userinfo.uid);
+                    userinfos[userinfo.uid] = userinfo;
+                }
+            }
+        }
+
+        std::vector<DbUserInfo> users = DatabaseManager::getUserInfoByName(text);
+        for(auto& userinfo: users){
+            if(userinfos.find(userinfo.uid) == userinfos.end()){
+                uids.push_back(userinfo.uid);
+                userinfos[userinfo.uid] = userinfo;
+            }
+        }
+        std::cout << "uids size:" << uids.size() <<std::endl;
+        std::vector<bool> isFriends = DatabaseManager::doFriendsExist(uids);
+        for(int i=0; i<isFriends.size(); i++){
+            if(isFriends[i]){
+                ui->search_list->addUserItem(userinfos[uids[i]]);
+            }
+        }
+
     }else{
         _state = _prev_state;
         ShowSearch(false);
@@ -373,7 +424,7 @@ void ChatDialog::handleGlobalMousePress(QMouseEvent *event)
 void ChatDialog::slot_to_chat_page(int uid){
 
     if(ChatUserWidMgr.find(uid) == ChatUserWidMgr.end()){
-        DbUserInfo info = DatabaseManager::getUserInfoByUid(uid);
+        DbUserInfo info = DatabaseManager::getUserInfoByUid(uid).value();
         int myid = UserMgr::GetInstance()->getUid_int();
         QVector<qint64> unreadids;
         DatabaseManager::getUnreadMessageCountFromUser(info.uid, myid, unreadids);
@@ -412,6 +463,16 @@ void ChatDialog::slot_to_chat_page(int uid){
     ui->side_contact_lb->ClearState();
 }
 
+void ChatDialog::slot_to_globalsearchpage()
+{
+    _global_search_dlg = std::make_shared<GlobalSearchPage>(this);
+    QString text = ui->search_edit->text();
+    if(!text.isEmpty()){
+        _global_search_dlg->initEdit(text);
+    }
+    _global_search_dlg->show();
+}
+
 void ChatDialog::slot_to_downloadfile_dir()
 {
     // 指定download默认路径
@@ -426,3 +487,17 @@ void ChatDialog::slot_to_downloadfile_dir()
         qDebug() << "选择的文件:" << filePath;
     }
 }
+
+void ChatDialog::slot_searchfinished(QVector<DbUserInfo> infos)
+{
+    for(auto& info: infos){
+        _global_search_dlg->addUserItem(info);
+    }
+}
+
+void ChatDialog::slot_updatemyapply(MyApplyRspInfo info)
+{
+    ui->side_contact_lb->ShowRedPoint();
+    ui->con_user_list->addMyApplysSubItem(info);
+}
+

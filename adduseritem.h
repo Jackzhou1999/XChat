@@ -16,7 +16,7 @@ public:
     explicit AddUserItem(QWidget *parent = nullptr);
     ~AddUserItem();
     QSize sizeHint() const override{
-        return QSize(250, 70);
+        return QSize(250, 60);
     }
 private:
     Ui::AddUserItem *ui;

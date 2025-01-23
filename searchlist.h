@@ -16,8 +16,9 @@ class SearchList: public QListWidget
     Q_OBJECT
 public:
     SearchList(QWidget *parent = nullptr);
-    void CloseFindDlg();
-    void SetSearchEdit(QWidget* edit);
+    void addUserItem(const DbUserInfo& info);
+    void ClearItem();
+
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override {
         // 检查事件是否是鼠标悬浮进入或离开
@@ -46,10 +47,9 @@ protected:
         return QListWidget::eventFilter(watched, event);
     }
 private:
-    void waitPending(bool pending = true);
-    bool _send_pending;
     void addTipItem();
-    std::shared_ptr<QDialog> _find_dlg;
+
+    bool _send_pending;
     QWidget* _search_edit;
     LoadingDialog* _loadingDialog;
 private slots:
@@ -57,6 +57,8 @@ private slots:
     void slot_user_search(std::shared_ptr<SearchInfo> si);
 signals:
     void sig_jump_chat_item(std::shared_ptr<SearchInfo> si);
+    void to_friendinfopage(int uid);
+    void to_globalsearchpage();
 };
 
 #endif // SEARCHLIST_H

@@ -26,6 +26,55 @@ LoginDialog::LoginDialog(QWidget *parent)
     ui->password_edit->setEchoMode(QLineEdit::PasswordEchoOnEdit);
     this->setWindowTitle(tr("XChat"));
 
+
+    QAction *emailAction = new QAction(ui->email_edit);
+    QPixmap pixmap(":/res/email.png");
+    emailAction->setIcon(QIcon(pixmap.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+
+    // searchAction->setIcon(QIcon(":/res/email.png"));
+    ui->email_edit->addAction(emailAction, QLineEdit::LeadingPosition);
+    ui->email_edit->setPlaceholderText(tr("邮箱"));
+    ui->email_edit->setPlaceholderOffset(35, 9);
+    clearAction = new QAction(ui->email_edit);
+    clearAction->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->email_edit->addAction(clearAction, QLineEdit::TrailingPosition);
+    connect(ui->email_edit, &CustomLineEdit::textChanged, [this](const QString& text){
+        if(!text.isEmpty()){
+            clearAction->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearAction->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearAction, &QAction::triggered, [this](){
+        ui->email_edit->clear();
+        clearAction->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->email_edit->clearFocus();
+    });
+
+    QAction *passwordAction = new QAction(ui->password_edit);
+    QPixmap pixmap2(":/res/password.png");
+    passwordAction->setIcon(QIcon(pixmap2.scaled(40, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    ui->password_edit->addAction(passwordAction, QLineEdit::LeadingPosition);
+    ui->password_edit->setPlaceholderText(tr("密码"));
+    ui->password_edit->setPlaceholderOffset(35, 9);
+    QAction * clearAction2 = new QAction(ui->password_edit);
+    clearAction2->setIcon(QIcon(":/res/close_transparent.png"));
+    ui->password_edit->addAction(clearAction2, QLineEdit::TrailingPosition);
+    connect(ui->password_edit, &CustomLineEdit::textChanged, [this, clearAction2](const QString& text){
+        if(!text.isEmpty()){
+            clearAction2->setIcon(QIcon(":/res/search_close.png"));
+        }else{
+            clearAction2->setIcon(QIcon(":/res/close_transparent.png"));
+        }
+    });
+    connect(clearAction2, &QAction::triggered, [this, clearAction2](){
+        ui->password_edit->clear();
+        clearAction2->setIcon(QIcon(":/res/close_transparent.png"));
+        ui->password_edit->clearFocus();
+    });
+
+    ui->login_pushButton->SetState("normal", "hover", "press");
+    ui->regist_pushButton->SetState("normal", "hover", "press");
 }
 
 LoginDialog::~LoginDialog()
@@ -212,7 +261,7 @@ bool LoginDialog::checkPasswdValid()
 
 void LoginDialog::timerCallback()
 {
-    showTip(tr("welcome"), true);
+    showTip(tr(""), true);
     _countdown_timer->stop();
 }
 

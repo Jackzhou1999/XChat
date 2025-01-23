@@ -11,6 +11,7 @@ class CustomLineEdit : public QLineEdit
 public:
     explicit CustomLineEdit(QWidget *parent = nullptr) : QLineEdit(parent),_max_length(0) {
         connect(this, &CustomLineEdit::textChanged, this, &CustomLineEdit::limitTextLength);
+        connect(this, &CustomLineEdit::returnPressed, this, &CustomLineEdit::slot_user_search);
         installEventFilter(this);
     }
 
@@ -52,5 +53,8 @@ private:
     int _max_length;
 signals:
     void sig_switch_search();
+    void sig_user_search(QString text);
+private slots:
+    void slot_user_search();
 };
 #endif // CUSTOMIZEEDIT_H

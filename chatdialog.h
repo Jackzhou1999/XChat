@@ -9,6 +9,8 @@
 #include "customitemdelegate.h"
 #include "chatuserwid.h"
 #include <QListWidgetItem>
+#include "globalsearchpage.h"
+#include "contacttreewidget.h"
 
 namespace Ui {
 class ChatDialog;
@@ -41,7 +43,11 @@ private slots:
     void slot_tofriendinfopage(int uid);
     void slot_tomyapplypage(int uid);
     void slot_to_chat_page(int uid);
+    void slot_to_globalsearchpage();
     void slot_to_downloadfile_dir();
+
+    void slot_searchfinished(QVector<DbUserInfo>);
+    void slot_updatemyapply(MyApplyRspInfo info);
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void handleGlobalMousePress(QMouseEvent *event);
@@ -56,6 +62,8 @@ private:
     QAction * clearAction;
     bool _b_loading;
     LoadingDialog* _loadingScreen;
+    std::shared_ptr<GlobalSearchPage> _global_search_dlg;
+
     QVector<StateWidget*> _side_lb_list;
 
     int _cur_chat_uid;

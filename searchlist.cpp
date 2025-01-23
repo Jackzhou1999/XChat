@@ -1,16 +1,14 @@
 #include "searchlist.h"
 #include<QScrollBar>
 #include "adduseritem.h"
-// #include "invaliditem.h"
-#include "findsuccessdialog.h"
 #include "tcpmgr.h"
 #include "customizeedit.h"
-// #include "findfaildlg.h"
 #include "loadingdlg.h"
 #include "userdata.h"
 #include "usermgr.h"
+#include "searchuseritem.h"
 
-SearchList::SearchList(QWidget *parent):QListWidget(parent),_find_dlg(nullptr), _search_edit(nullptr), _send_pending(false)
+SearchList::SearchList(QWidget *parent):QListWidget(parent), _search_edit(nullptr), _send_pending(false)
 {
     Q_UNUSED(parent);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -24,34 +22,6 @@ SearchList::SearchList(QWidget *parent):QListWidget(parent),_find_dlg(nullptr), 
     //连接搜索条目
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_user_search, this, &SearchList::slot_user_search);
 }
-
-
-void SearchList::CloseFindDlg()
-{
-    if(_find_dlg){
-        _find_dlg->hide();
-        _find_dlg = nullptr;
-    }
-}
-
-void SearchList::SetSearchEdit(QWidget* edit) {
-    // _search_edit = edit;
-}
-
-void SearchList::waitPending(bool pending)
-{
-    // if(pending){
-    //     _loadingDialog = new LoadingDlg(this);
-    //     _loadingDialog->setModal(true);
-    //     _loadingDialog->show();
-    //     _send_pending = pending;
-    // }else{
-    //     _loadingDialog->hide();
-    //     _loadingDialog->deleteLater();
-    //     _send_pending = pending;
-    // }
-}
-
 
 void SearchList::addTipItem()
 {
@@ -93,66 +63,40 @@ void SearchList::slot_item_clicked(QListWidgetItem *item)
     }
 
     if(itemType == ListItemType::ADD_USER_TIP_ITEM){
-
-        // if (_send_pending) {
-        //     return;
-        // }
-
-        // if (!_search_edit) {
-        //     return;
-        // }
-        // waitPending(true);
-        // auto search_edit = dynamic_cast<CustomizeEdit*>(_search_edit);
-        // auto uid_str = search_edit->text();
-        // //此处发送请求给server
-        // QJsonObject jsonObj;
-        // jsonObj["uid"] = uid_str;
-
-        // QJsonDocument doc(jsonObj);
-        // QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-
-        // //发送tcp请求给chat server
-        // emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_SEARCH_USER_REQ, jsonData);
-        // return;
-
-        _find_dlg = std::make_shared<FindSuccessDialog>(this);
-        connect(std::dynamic_pointer_cast<FindSuccessDialog>(_find_dlg).get(), &FindSuccessDialog::sig_exit, this, &SearchList::CloseFindDlg);
-        auto si = std::make_shared<SearchInfo>(250, QString("jackzhou"), QString("jackzhou"), QString("hello world"), 1, QString("head.jpg"));
-        std::dynamic_pointer_cast<FindSuccessDialog>(_find_dlg)->SetSearchInfo(si);
-        _find_dlg->show();
+        emit to_globalsearchpage();
         return;
-
     }
-
-    //清除弹出框
-    CloseFindDlg();
 }
 
 void SearchList::slot_user_search(std::shared_ptr<SearchInfo> si)
 {
-//     waitPending(false);
-//     if (si == nullptr) {
-//         _find_dlg = std::make_shared<FindFailDlg>(this);
-//     }else{
-//         //如果是自己，暂且先直接返回，以后看逻辑扩充
-//         auto self_uid = UserMgr::GetInstance()->GetUid();
-//         if (si->_uid == self_uid) {
-//             return;
-//         }
-//         //此处分两种情况，一种是搜多到已经是自己的朋友了，一种是未添加好友
-//         //查找是否已经是好友
-//         bool bExist = UserMgr// #include "userdata.h"
-// ::GetInstance()->CheckFriendById(si->_uid);
-//         if(bExist){
-//             //此处处理已经添加的好友，实现页面跳转
-//             //跳转到聊天界面指定的item中
-//             emit sig_jump_chat_item(si);
-//             return;
-//         2053761835@qq.com}
-//         //此处先处理为添加的好友
-//         _find_dlg = std::make_shared<FindSuccessDlg>(this);
-//         dynamic_pointer_cast<FindSuccessDlg>(_find_dlg)->SetSearchInfo(si);
 
-//     }
-//     _find_dlg->show();
+}
+
+
+void SearchList::addUserItem(const DbUserInfo& info)
+{
+    auto *search_user_item = new SearchUserItem();
+    search_user_item->setInfo(info);
+    QListWidgetItem *item = new QListWidgetItem;
+    item->setSizeHint(search_user_item->sizeHint());
+    this->addItem(item);
+    this->setItemWidget(item, search_user_item);
+    connect(search_user_item, &SearchUserItem::sig_tofriendinfopage, this, &SearchList::to_friendinfopage);
+}
+
+void SearchList::ClearItem(){
+    for (int i = 0; i < count(); ++i) {
+        QListWidgetItem* searchuserItem = item(i);
+        QWidget* widget = itemWidget(searchuserItem);
+        // 检查 itemWidget 是否是 SearchUserItem 类型
+        if (widget && qobject_cast<SearchUserItem*>(widget)) {
+            // 删除 widget 和 QListWidgetItem
+            removeItemWidget(searchuserItem);
+            delete widget;  // 删除 widget
+            delete searchuserItem;    // 删除 QListWidgetItem
+            // 减少索引，继续检查下一个项
+            --i;
+        }
+    }
 }

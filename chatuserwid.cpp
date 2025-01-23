@@ -17,7 +17,7 @@ ChatUserWid::ChatUserWid(QWidget *parent)
     _redDotLabel->setStyleSheet(
         "background-color: red; "
         "color: white; "
-        "border-radius: 50px; "
+        "border-radius: 6px; "
         "font-size: 11px;"
         "font-weight: bold;"
         "text-align: center;"

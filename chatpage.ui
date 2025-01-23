@@ -158,17 +158,17 @@
           </spacer>
          </item>
          <item>
-          <widget class="ClickLabelPlus" name="emo_lb">
+          <widget class="ClickButton" name="emo_btn">
            <property name="minimumSize">
             <size>
-             <width>25</width>
-             <height>25</height>
+             <width>30</width>
+             <height>30</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>25</width>
-             <height>25</height>
+             <width>30</width>
+             <height>30</height>
             </size>
            </property>
            <property name="text">
@@ -193,17 +193,17 @@
           </spacer>
          </item>
          <item>
-          <widget class="ClickLabelPlus" name="file_lb">
+          <widget class="ClickButton" name="file_btn">
            <property name="minimumSize">
             <size>
-             <width>25</width>
-             <height>25</height>
+             <width>30</width>
+             <height>30</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>25</width>
-             <height>25</height>
+             <width>30</width>
+             <height>30</height>
             </size>
            </property>
            <property name="text">
@@ -319,11 +319,6 @@
    <class>ClickButton</class>
    <extends>QPushButton</extends>
    <header>clickbutton.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ClickLabelPlus</class>
-   <extends>QLabel</extends>
-   <header>clicklabelplus.h</header>
   </customwidget>
   <customwidget>
    <class>ChatView</class>

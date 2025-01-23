@@ -227,6 +227,7 @@ void FileBubble::slot_uploadFinished(uint64_t fileid)
 {
     if(fileid == m_fileid){
         emit sig_transferFinished();
+        m_progressBar->hide();
     }
 }
 
@@ -234,6 +235,8 @@ void FileBubble::slot_downloadFinished(uint64_t fileid)
 {
     if(fileid == m_fileid){
         emit sig_downloadFinished();
+        m_progressBar->hide();
+
     }
 }
 

@@ -22,10 +22,11 @@ ChatPage::ChatPage(QWidget *parent)
 {
     ui->setupUi(this);
     ui->send_btn->SetState("normal", "hover", "press");
-    ui->emo_lb->SetState("normal", "hover", "press", "normal", "hover", "press");
-    ui->file_lb->SetState("normal", "hover", "press", "normal", "hover", "press");
+    ui->emo_btn->SetState("normal", "hover", "press");
+    ui->file_btn->SetState("normal", "hover", "press");
     _loadingScreen = new LoadingDialog(this);
 
+    connect(ui->file_btn, &ClickButton::clicked, this, &ChatPage::slot_filebtn_click);
     connect(ui->chat_data_list, &ChatView::sig_load_history_msg, this, &ChatPage::slot_load_history_msg);
     connect(this, &ChatPage::sig_load_history_msg_finish, ui->chat_data_list, &ChatView::slot_load_history_msg_finish);
     connect(this, &ChatPage::sig_set_scrollbar_to_bottom, ui->chat_data_list, &ChatView::slot_set_scrollbar_to_bottom);
@@ -51,7 +52,7 @@ void ChatPage::SetUserInfo(int uid)
     //数据库接口
     //查询好友关系表,对应uid对应的用户信息
     _peeruid = uid;
-    _peerinfo = DatabaseManager::getUserInfoByUid(uid);
+    _peerinfo = DatabaseManager::getUserInfoByUid(uid).value();
     _timestamp.clear();
     _server_data_run_out = false;
     //设置ui界面
@@ -198,6 +199,24 @@ void ChatPage::AppendChatMsg(const ChatMessage &msg)
         ui->chat_data_list->appendChatItem(sentBubble);
     }
     emit sig_set_scrollbar_to_bottom();
+}
+
+bool ChatPage::isImageFile(const QString &filePath)
+{
+    // 常见的图片扩展名
+    QStringList imageExtensions = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp"};
+
+    // 获取文件信息
+    QFileInfo fileInfo(filePath);
+
+    // 检查文件是否存在，并且是普通文件
+    if (!fileInfo.exists() || !fileInfo.isFile()) {
+        return false;
+    }
+
+    // 检查文件扩展名
+    QString extension = fileInfo.suffix().toLower(); // 获取文件扩展名并转为小写
+    return imageExtensions.contains("." + extension);
 }
 
 void ChatPage::on_send_btn_clicked()
@@ -438,4 +457,127 @@ void ChatPage::hideLoadingDialog() {
 void ChatPage::slot_server_data_run_out()
 {
     _server_data_run_out = true;
+}
+
+void ChatPage::slot_filebtn_click()
+{
+    // 指定download默认路径
+    QString defaultDir = "/home/jackzhou/";
+    QString filePath = QFileDialog::getOpenFileName(
+        this,                                  // 父窗口
+        "选择文件",                              // 对话框标题
+        defaultDir,                            // 默认路径
+        "所有文件 (*.*);;文本文件 (*.txt)"         // 文件过滤器
+        );
+    if (!filePath.isEmpty()) {
+        qDebug() << "选择的文件:" << filePath;
+
+        ChatRole role = ChatRole::Self;
+        QString userName = UserMgr::GetInstance()->getname();
+        QString userIcon = UserMgr::GetInstance()->getIcon();
+        int myid = UserMgr::GetInstance()->getUid_int();
+
+        QWidget *textBubble = nullptr;
+        ImageBubble *imageBubble = nullptr;
+        FileBubble* fileBubble = nullptr;
+
+        QJsonObject ret;
+        ret["sender_id"] = myid;
+        ret["receiver_id"] = _peeruid;
+        ret["is_group"] = false;
+
+        QDateTime currentDateTime = QDateTime::currentDateTime();
+        ret["timestamp"] = currentDateTime.toSecsSinceEpoch();
+
+        ChatMessage msg;
+        msg.created_at = currentDateTime;
+
+        if(isImageFile(filePath)){
+            ret["content_type"] = 2;
+            QFileInfo fileinfo(filePath);
+            QString filename = fileinfo.fileName();
+            QString filetype = fileinfo.suffix();
+            qint64 filesize = fileinfo.size();
+
+            msg.content_type = 2;
+            msg.content = filename;
+
+            imageBubble = new ImageBubble(userName, QPixmap(userIcon), QPixmap(filePath), true);
+            connect(imageBubble, &ImageBubble::imageDoubleClicked, this, &ChatPage::slot_show_imageviewer);
+
+            QFile file(filePath);
+            if (!file.open(QIODevice::ReadOnly)) {
+                qWarning() << "Could not open file:" << file.errorString();
+                return;
+            }
+
+            QCryptographicHash hash(QCryptographicHash::Md5);
+            if (!hash.addData(&file)) {
+                qWarning() << "Failed to read data from file:" << filePath;
+                return ;
+            }
+
+            QString filemd5 = hash.result().toHex();
+            QJsonObject fileobj;
+            fileobj["filename"] = filename;
+            fileobj["filesize"] = filesize;
+            fileobj["filetype"] = filetype;
+            fileobj["filelocalpath"] = filePath;
+            fileobj["hash"] = filemd5;
+
+            ret["content"] = fileobj;
+            QJsonDocument doc(ret);
+            QString jsonString = doc.toJson(QJsonDocument::Indented);
+            emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_NOTIFY_TEXT_CHAT_MSG_REQ, jsonString);
+            ui->chat_data_list->appendChatItem(imageBubble);
+
+        }else{
+            ret["content_type"] = 3;
+            QFileInfo fileinfo(filePath);
+            QString filename = fileinfo.fileName();
+            QString filetype = fileinfo.suffix();
+            qint64 filesize = fileinfo.size();
+
+            msg.content_type = 3;
+            msg.content = filename;
+
+            QUuid id = QUuid::createUuid();
+            QString strId = id.toString();
+
+
+            QFile file(filePath);
+            if (!file.open(QIODevice::ReadOnly)) {
+                qWarning() << "Could not open file:" << file.errorString();
+                return;
+            }
+
+            QCryptographicHash hash(QCryptographicHash::Md5);
+            if (!hash.addData(&file)) {
+                qWarning() << "Failed to read data from file:" << filePath;
+                return ;
+            }
+            QString filemd5 = hash.result().toHex();
+
+            QJsonObject fileobj;
+            fileobj["filename"] = filename;
+            fileobj["filesize"] = filesize;
+            fileobj["filetype"] = filetype;
+            fileobj["filelocalpath"] = filePath;
+            fileobj["filebubbleid"] = strId;
+            fileobj["hash"] = filemd5;
+
+            ret["content"] = fileobj;
+
+            fileBubble = new FileBubble(ChatRole::Self, filename, filesize, filetype, userName, QPixmap(userIcon), filePath);
+            fileBubble->setMyId(strId);
+            connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_start_upload_file, fileBubble, &FileBubble::slot_startuploadFile);
+            QJsonDocument doc(ret);
+            QString jsonString = doc.toJson(QJsonDocument::Indented);
+            emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_NOTIFY_TEXT_CHAT_MSG_REQ, jsonString);
+            ui->chat_data_list->appendChatItem(fileBubble);
+        }
+
+        emit sig_set_scrollbar_to_bottom();
+        _chatuserwid->UpdateInfo(msg);
+    }
 }

@@ -5,6 +5,9 @@
 #include <singleton.h>
 #include "global.h"
 #include "userdata.h"
+#include "Semaphore.h"
+#include "workthread.h"
+#include "contacttreewidget.h"
 
 class TcpMgr : public QObject, public Singleton<TcpMgr>
 {
@@ -22,6 +25,10 @@ private:
     uint16_t _msg_lenght;
     QMap<uint64_t, int> _file_to_id;
     QMap<ReqId, std::function<void(ReqId, uint16_t, QByteArray)>> _handlers;
+
+    std::shared_ptr<WorkThread> _sonthread;
+    QMap<uint64_t, std::shared_ptr<semaphore>> _semaphores;
+
     void initTcpHandlers();
 
 signals:
@@ -39,12 +46,17 @@ signals:
     void sig_history_msg_arrived(int uid);
 
     void sig_start_upload_file(uint64_t fileid, QString filebubbleid);
+    void sig_searchfinished(QVector<DbUserInfo>);
+    void sig_updatefriendrequest(MyApplyRspInfo);
 public slots:
     void slot_connect_tcp(UserInfo);
     void slot_read_msg();
     void slot_handle_msg(ReqId, uint16_t, QByteArray);
     void slot_send_data(ReqId , QString);
     void slot_new_msg_arrived(uint64_t fileid);
+
+    void slot_notifydownloadfinished(int fileid);
+
 };
 
 #endif // TCPMGR_H

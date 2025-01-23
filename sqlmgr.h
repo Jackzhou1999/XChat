@@ -148,7 +148,13 @@ public:
     static FriendRelationship getFriendRelationshipByUid(qint64 user_id, qint64 friend_id);
 
     // 查询好友的用户信息
-    static DbUserInfo getUserInfoByUid(qint64 friend_uid);
+    static std::optional<DbUserInfo> getUserInfoByUid(qint64 friend_uid);
+
+    // 查询好友的用户信息
+    static std::vector<DbUserInfo> getUserInfoByName(QString name);
+
+    // 查询好友的用户信息
+    static std::optional<DbUserInfo> getUserInfoByEmail(QString email);
 
     // 分页查询聊天记录
     static std::deque<ChatMessage> getChatMessages(qint64 user_id, qint64 friend_id, int limit, QString& timestamp);
@@ -170,7 +176,7 @@ public:
     static void insertFriendRelationship(qint64 user_id, qint64 friend_id, int status, const QString& created_at, const QString& updated_at);
 
     // 插入 friend_requests 表数据
-    static void insertFriendRequest(qint64 sender_id, qint64 receiver_id, const QString& message, int status,
+    static void insertFriendRequest(qint64 id, qint64 sender_id, qint64 receiver_id, const QString& message, int status,
                              const QString& created_at, const QString& updated_at, const QString& rejection_reason,
                              bool is_sender_read);
 
@@ -195,6 +201,10 @@ public:
     static std::optional<FriendRequest> getFriendRequestBySenderAndReceiver(qint64 senderId, qint64 receiverId);
 
     static bool setMessageStatusToRead(qint64 messageId);
+
+    static std::vector<bool> doFriendsExist(const QVector<qint64> &uids);
+
+    static bool doFriendsExist(const qint64 &uids);
 
 };
 

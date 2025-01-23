@@ -30,7 +30,8 @@ void contactinfopage::setContactInfo(int uid)
         qDebug() << "NewFriendInfoPage::setNewFriendInfo: use cache";
         info = cacheinfo.value();
     }else{
-        info = DatabaseManager::getUserInfoByUid(uid);
+        auto info_opt = DatabaseManager::getUserInfoByUid(uid);
+        if(info_opt.has_value()) info = info_opt.value();
     }
     int myid = UserMgr::GetInstance()->getUid_int();
 

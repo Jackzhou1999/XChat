@@ -16,13 +16,17 @@ public:
 
     void SetSelected(bool bselected);
     void AddRedPoint();
-    void ShowRedPoint(bool show=true);
+    void ShowRedPoint();
+    void HideRedPoint();
 protected:
     void paintEvent(QPaintEvent *event) override;
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void enterEvent(QEnterEvent *event) override;
     virtual void leaveEvent(QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
+    void updateLabelPosition();
 
     QString _normal;
     QString _hover;

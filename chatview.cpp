@@ -147,10 +147,31 @@ void ChatView::slot_load_history_msg_finish(int oldScrollValue, int oldContentHe
 
 void ChatView::slot_set_scrollbar_to_bottom()
 {
+    std::cout << "void ChatView::slot_set_scrollbar_to_bottom()";
     QApplication::processEvents();
     QWidget *contentWidget = m_pScrollArea->widget();
     contentWidget->adjustSize();
     QScrollBar *pVScrollBar = m_pScrollArea->verticalScrollBar();
     pVScrollBar->setValue(pVScrollBar->maximum());
 
+    QTimer::singleShot(0, this, [this, contentWidget]() {
+        // 获取垂直滚动条
+        QScrollBar *pVScrollBar = m_pScrollArea->verticalScrollBar();
+
+        // 确保滚动条最大值已更新
+        pVScrollBar->setValue(pVScrollBar->maximum());
+
+        // 或者使用 ensureWidgetVisible 来确保内容显示在可见区域
+        // m_pScrollArea->ensureWidgetVisible(contentWidget);
+
+        std::cout << "Scrollbar set to bottom!" << std::endl;
+    });
+
+    // QWidget *contentWidget = m_pScrollArea->widget();
+
+    // // 确保内容更新完成后再操作
+    // contentWidget->updateGeometry();
+
+    // // 使用 ensureWidgetVisible 来滚动到底部
+    // m_pScrollArea->ensureWidgetVisible(contentWidget);
 }

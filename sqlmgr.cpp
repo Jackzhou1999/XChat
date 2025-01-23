@@ -27,7 +27,7 @@ FriendRelationship DatabaseManager::getFriendRelationshipByUid(qint64 user_id, q
 }
 
 
-DbUserInfo DatabaseManager::getUserInfoByUid(qint64 friend_uid) {
+std::optional<DbUserInfo> DatabaseManager::getUserInfoByUid(qint64 friend_uid) {
     QSqlDatabase db = SqliteConnectionPool::getInstance().getConnection();
     QSqlQuery query(db);
 
@@ -37,7 +37,7 @@ DbUserInfo DatabaseManager::getUserInfoByUid(qint64 friend_uid) {
         )");
     query.bindValue(":uid", friend_uid);
 
-    DbUserInfo user = {};
+    DbUserInfo user;
     if (query.exec() && query.next()) {
         user.id = query.value("id").toInt();
         user.uid = query.value("uid").toLongLong();
@@ -49,7 +49,67 @@ DbUserInfo DatabaseManager::getUserInfoByUid(qint64 friend_uid) {
         user.icon = query.value("icon").toString();
     } else {
         SqliteConnectionPool::getInstance().releaseConnection(db);
-        return user; // 如果查询不到数据，返回空值
+        return std::nullopt; // 如果查询不到数据，返回空值
+    }
+
+    SqliteConnectionPool::getInstance().releaseConnection(db);
+    return user;
+}
+
+std::vector<DbUserInfo> DatabaseManager::getUserInfoByName(QString name) {
+    QSqlDatabase db = SqliteConnectionPool::getInstance().getConnection();
+    QSqlQuery query(db);
+
+    query.prepare(R"(
+            SELECT * FROM user
+            WHERE name LIKE :name
+        )");
+    query.bindValue(":name", "%"+name+"%");
+
+    std::vector<DbUserInfo> users;
+
+    if (query.exec()) {
+        while (query.next()) {
+            DbUserInfo user;
+            user.id = query.value("id").toInt();
+            user.uid = query.value("uid").toLongLong();
+            user.name = query.value("name").toString();
+            user.email = query.value("email").toString();
+            user.nick = query.value("nick").toString();
+            user.desc = query.value("desc").toString();
+            user.sex = query.value("sex").toInt();
+            user.icon = query.value("icon").toString();
+            users.push_back(user);
+        }
+    }
+
+    SqliteConnectionPool::getInstance().releaseConnection(db);
+    return users;
+}
+
+std::optional<DbUserInfo> DatabaseManager::getUserInfoByEmail(QString email) {
+    QSqlDatabase db = SqliteConnectionPool::getInstance().getConnection();
+    QSqlQuery query(db);
+
+    query.prepare(R"(
+            SELECT * FROM user
+            WHERE email = :email
+        )");
+    query.bindValue(":email", email);
+
+    DbUserInfo user;
+    if (query.exec() && query.next()) {
+        user.id = query.value("id").toInt();
+        user.uid = query.value("uid").toLongLong();
+        user.name = query.value("name").toString();
+        user.email = query.value("email").toString();
+        user.nick = query.value("nick").toString();
+        user.desc = query.value("desc").toString();
+        user.sex = query.value("sex").toInt();
+        user.icon = query.value("icon").toString();
+    } else {
+        SqliteConnectionPool::getInstance().releaseConnection(db);
+        return std::nullopt; // 如果查询不到数据，返回空值
     }
 
     SqliteConnectionPool::getInstance().releaseConnection(db);
@@ -261,16 +321,18 @@ void DatabaseManager::insertFriendRelationship(qint64 user_id, qint64 friend_id,
 }
 
 // 插入 friend_requests 表数据
-void DatabaseManager::insertFriendRequest(qint64 sender_id, qint64 receiver_id, const QString& message, int status,
+void DatabaseManager::insertFriendRequest(qint64 id, qint64 sender_id, qint64 receiver_id, const QString& message, int status,
                                           const QString& created_at, const QString& updated_at, const QString& rejection_reason,
                                           bool is_sender_read) {
     QSqlDatabase db = SqliteConnectionPool::getInstance().getConnection();
     QSqlQuery query(db);
 
     query.prepare(R"(
-            INSERT INTO friend_requests (sender_id, receiver_id, message, status, created_at, updated_at, rejection_reason, is_sender_read)
-            VALUES (:sender_id, :receiver_id, :message, :status, :created_at, :updated_at, :rejection_reason, :is_sender_read)
+            INSERT INTO friend_requests (id, sender_id, receiver_id, message, status, created_at, updated_at, rejection_reason, is_sender_read)
+            VALUES (:id, :sender_id, :receiver_id, :message, :status, :created_at, :updated_at, :rejection_reason, :is_sender_read)
         )");
+
+    query.bindValue(":id", id);
     query.bindValue(":sender_id", sender_id);
     query.bindValue(":receiver_id", receiver_id);
     query.bindValue(":message", message);
@@ -532,4 +594,77 @@ bool DatabaseManager::setMessageStatusToRead(qint64 messageId) {
 
     SqliteConnectionPool::getInstance().releaseConnection(db);
     return true; // 更新成功
+}
+
+std::vector<bool> DatabaseManager::doFriendsExist(const QVector<qint64> &uids) {
+    // 如果集合为空，直接返回空的结果向量
+    if (uids.isEmpty()) {
+        return {};
+    }
+
+    // 从连接池获取数据库连接
+    QSqlDatabase db = SqliteConnectionPool::getInstance().getConnection();
+    if (!db.isOpen()) {
+        qWarning() << "Database is not open!";
+        return std::vector<bool>(uids.size(), false);
+    }
+
+    // 准备结果向量
+    std::vector<bool> results;
+    results.reserve(uids.size());
+
+    QSqlQuery query(db);
+
+    // 遍历 QSet 的每个 uid 逐一查询
+    for (auto uid : uids) {
+        query.prepare(R"(
+                SELECT 1 FROM friend_relationships
+                WHERE friend_id = :uid
+                LIMIT 1
+            )");
+        query.bindValue(":uid", uid);
+
+        bool exists = false;
+        if (query.exec() && query.next()) {
+            exists = true; // 如果有结果，说明 uid 存在
+        } else if (query.lastError().isValid()) {
+            qWarning() << "SQL error for uid" << uid << ":" << query.lastError().text();
+        }
+
+        // 将结果加入向量
+        results.push_back(exists);
+    }
+
+    // 释放数据库连接
+    SqliteConnectionPool::getInstance().releaseConnection(db);
+    return results;
+}
+
+bool DatabaseManager::doFriendsExist(const qint64 &uid)
+{
+    QSqlDatabase db = SqliteConnectionPool::getInstance().getConnection();
+    if (!db.isOpen()) {
+        qWarning() << "Database is not open!";
+        return false;
+    }
+
+    QSqlQuery query(db);
+
+    query.prepare(R"(
+            SELECT 1 FROM friend_relationships
+            WHERE friend_id = :uid
+            LIMIT 1
+        )");
+    query.bindValue(":uid", uid);
+
+    bool exists = false;
+    if (query.exec() && query.next()) {
+        exists = true; // 如果有结果，说明 uid 存在
+    } else if (query.lastError().isValid()) {
+        qWarning() << "SQL error for uid" << uid << ":" << query.lastError().text();
+    }
+
+    // 释放数据库连接
+    SqliteConnectionPool::getInstance().releaseConnection(db);
+    return exists;
 }

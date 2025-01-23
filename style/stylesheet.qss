@@ -1,5 +1,76 @@
-QDialog#LoginDialog,#RegisteDialog,#ForgetPwdDialog{
-background-color:rgb(255,255,255)
+#logo_wgt{
+    background-color: rgb(65, 69, 71);
+}
+
+#login_wgt{
+    background-color: rgb(255, 255, 255);
+}
+
+#reset_wgt{
+    background-color: rgb(65, 69, 71);
+}
+
+#regist_pushButton[state='normal']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#regist_pushButton[state='hover']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#regist_pushButton[state='press']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#login_pushButton[state='normal']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#login_pushButton[state='hover']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#login_pushButton[state='press']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+QDialog#LoginDialog,#RegisteDialog,#ForgetPwdDialog,#GlobalSearchPage{
+    background-color:rgb(255,255,255)
+}
+
+
+#register_wgt{
+    background-color: rgb(65, 69, 71);
 }
 
 #err_tip[state='normal']{
@@ -23,23 +94,85 @@ EyeButton {
     color: while;
 }
 
-QPushButton {
-    border: 2px solid black;    /* Border color */
-    border-radius: 8px;           /* Rounded corners */
-    background-color: #f2f3f4;    /* Background color */
-    color: black;                 /* Text color */
-    padding: 5px;                 /* Padding inside the button */
+#getcode_btn[state='normal']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
 }
 
-
-QPushButton:hover {
-    /* 鼠标停留状态 */
-    background-color: #bdc3c7;
+#getcode_btn[state='hover']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
 }
 
-QPushButton:pressed {
-    /* 鼠标按下状态 */
-    background-color: #f2f3f4;
+#getcode_btn[state='press']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#confirm_btn[state='normal']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#confirm_btn[state='hover']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#confirm_btn[state='press']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#cancel_btn[state='normal']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#cancel_btn[state='hover']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#cancel_btn[state='press']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
 }
 
 /* chatdialog.ui */
@@ -250,27 +383,33 @@ border-radius: 20px; /* 设置圆角 */
    border-radius: 5px; /* 设置圆角 */
 }
 
-#emo_lb[state='normal']{
+#emo_btn[state='normal']{
+    background-color: rgb(255, 255, 255);
     border-image: url(:/res/emoji.png);
 }
 
-#emo_lb[state='hover']{
+#emo_btn[state='hover']{
+    background-color: rgb(255, 255, 255);
     border-image: url(:/res/emoji.png);
 }
 
-#emo_lb[state='press']{
+#emo_btn[state='press']{
+    background-color: rgb(255, 255, 255);
     border-image: url(:/res/emoji2.png);
 }
 
-#file_lb[state='normal']{
+#file_btn[state='normal']{
+    background-color: rgb(255, 255, 255);
     border-image: url(:/res/file.png);
 }
 
-#file_lb[state='hover']{
+#file_btn[state='hover']{
+    background-color: rgb(255, 255, 255);
     border-image: url(:/res/file.png);
 }
 
-#file_lb[state='press']{
+#file_btn[state='press']{
+    background-color: rgb(255, 255, 255);
     border-image: url(:/res/file2.png);
 }
 
@@ -342,11 +481,7 @@ border-radius: 20px; /* 设置圆角 */
 }
 
 #add_tip {
-    border-image: url(:/res/addtip.png);
-}
-
-#right_tip{
- border-image: url(:/res/right_tip.png);
+    border-image: url(:/res/sousuo.png);
 }
 
 #message_tip{
@@ -355,74 +490,14 @@ border-radius: 20px; /* 设置圆角 */
   font-size: 12pt;
 }
 
-/* FindSuccessDialog.ui */
-
-#FindSuccessDialog{
-   background-color: #ffffff;
-   border-radius: 3px; /* 设置圆角 */
-
-}
-
-#name_lb{
-    font-size: 16px;
-    font-family: "ubuntu";
-}
-
-#add_friend_btn[state='normal']{
-    border: 1px solid black;    /* Border color */
-    background: #07c160;
-    color: #ffffff;
-    font-size: 14px; /* 设置字体大小 */
-    font-family: "ubuntu"; /* 设置字体 */
-    border-radius: 5px; /* 设置圆角 */
-}
-
-#add_friend_btn[state='hover']{
-    border: 1px solid black;    /* Border color */
-    background: #3bbb4b;
-    color: #ffffff;
-    font-size: 14px; /* 设置字体大小 */
-    font-family: "ubuntu"; /* 设置字体 */
-    border-radius: 5px; /* 设置圆角 */
-}
-
-#add_friend_btn[state='press']{
-    border: 1px solid black;    /* Border color */
-   background: #07c160;
-   color: #ffffff;
-   font-size: 14px; /* 设置字体大小 */
-   font-family: "ubuntu"; /* 设置字体 */
-   border-radius: 5px; /* 设置圆角 */
-}
-
-#exit_btn[state='normal']{
-    border: 1px solid black;    /* Border color */
-    background: #07c160;
-    color: #ffffff;
-    font-size: 14px; /* 设置字体大小 */
-    font-family: "ubuntu"; /* 设置字体 */
-    border-radius: 5px; /* 设置圆角 */
-}
-
-#exit_btn[state='hover']{
-    border: 1px solid black;    /* Border color */
-    background: #3bbb4b;
-    color: #ffffff;
-    font-size: 14px; /* 设置字体大小 */
-    font-family: "ubuntu"; /* 设置字体 */
-    border-radius: 5px; /* 设置圆角 */
-}
-
-#exit_btn[state='press']{
-    border: 1px solid black;    /* Border color */
-   background: #07c160;
-   color: #ffffff;
-   font-size: 14px; /* 设置字体大小 */
-   font-family: "ubuntu"; /* 设置字体 */
-   border-radius: 5px; /* 设置圆角 */
-}
-
 /* applyfriend.ui */
+
+#apply_lb{
+    background:rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+}
 
 #ApplyFriend{
     border: 2px solid #f1f1f1;
@@ -458,74 +533,6 @@ border-radius: 20px; /* 设置圆角 */
     font-family: "Microsoft YaHei";
 }
 
-#apply_wid #lb_ed {
-       border: none;
-       font-size: 14px;
-       font-family: "Microsoft YaHei";
-}
-
-#apply_wid #more_lb{
-    border-image: url(:/res/arowdown.png);
-}
-
-#apply_wid #tipslb[state='normal'] {
-    padding: 2px;
-    background: #e1e1e1;
-    color: #1e1e1e;
-    border-radius: 10px;
-}
-
-#apply_wid #tipslb[state='hover'] {
-    padding: 2px;
-    background: #e1e1e1;
-    color: #1e1e1e;
-    border-radius: 10px;
-}
-
-#apply_wid #tipslb[state='pressed'] {
-    padding: 2px;
-    background: #e1e1e1;
-    color: #48bf56;
-    border-radius: 10px;
-}
-
-#apply_wid #tipslb[state='selected_normal'] {
-    padding: 2px;
-    background: #e1e1e1;
-    color: #48bf56;
-    border-radius: 10px;
-}
-
-#apply_wid #tipslb[state='selected_hover'] {
-    padding: 2px;
-    background: #e1e1e1;
-    color: #48bf56;
-    border-radius: 10px;
-}
-
-#apply_wid #tipslb[state='selected_pressed'] {
-    padding: 2px;
-    background: #e1e1e1;
-    color: #1e1e1e;
-    border-radius: 10px;
-}
-
-#input_tip_wid {
-    background: #d3eaf8;
-}
-
-#apply_wid #FriendLabel {
-    background: #daf6e7;
-    color: #48bf56;
-    border-radius: 10px;
-}
-
-#apply_wid #tip_lb {
-    padding-left: 2px;
-    color:rgb(153,153,153);
-    font-size: 14px;
-    font-family: "ubuntu";
-}
 
 #gridWidget {
    background: #fdfdfd;
@@ -535,6 +542,33 @@ border-radius: 20px; /* 设置圆角 */
 #con_user_list {
     background-color: rgb(247,247,248);
     border: none;
+}
+
+#apply_friend_sure_btn[state='normal']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(65, 69, 71);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#apply_friend_sure_btn[state='hover']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#apply_friend_sure_btn[state='press']{
+    border: 2px solid rgb(65, 69, 71);    /* Border color */
+    background: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "ubuntu"; /* 设置字体 */
+    border-radius: 5px; /* 设置圆角 */
 }
 
 /*newfriendinfopage.ui*/
@@ -566,6 +600,7 @@ border-radius: 20px; /* 设置圆角 */
    border-radius: 5px; /* 设置圆角 */
 }
 
+
 /* contactinfopage.ui*/
 
 #sendmsg_btn[state='normal']{
@@ -593,4 +628,50 @@ border-radius: 20px; /* 设置圆角 */
    font-size: 14px; /* 设置字体大小 */
    font-family: "ubuntu"; /* 设置字体 */
    border-radius: 5px; /* 设置圆角 */
+}
+
+#s_btn[state='normal']{
+    border: 0px solid;    /* Border color */
+    border-image: url(:/res/information.png);
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#s_btn[state='hover']{
+    border: 0px solid;    /* Border color */
+    border-image: url(:/res/information_normal.png);
+    border-radius: 5px; /* 设置圆角 */
+}
+
+#s_btn[state='press']{
+    border: 0px;    /* Border color */
+    border-image: url(:/res/information_normal.png);
+    border-radius: 5px; /* 设置圆角 */
+}
+
+/* GlobalSearchPage.ui */
+
+#global_search_list {
+    background-color: rgb(255,255,255);
+    border: none;
+}
+
+#global_search_list::item:selected {
+    background-color: #d3d7d4;
+    border: none;
+    outline: none;
+}
+
+#global_search_list::item:hover {
+    background-color: rgb(206,207,208);
+    border: none;
+    outline: none;
+}
+
+#global_search_list::focus {
+    border: none;
+    outline: none;
+}
+
+#global_search_line{
+    border: 0px solid rgb245,245,245）;    /* Border color */
 }

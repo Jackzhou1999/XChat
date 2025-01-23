@@ -25,7 +25,8 @@ public:
 
     ChatUserWid* _chatuserwid;
     int _peeruid;
-
+private:
+    static bool isImageFile(const QString &filePath);
 private slots:
     void on_send_btn_clicked();
     void slot_show_imageviewer(const QPixmap& image);
@@ -33,6 +34,7 @@ private slots:
     void slot_history_msg_from_server_arrived(int uid, int oldScrollValue, int oldContentHeight);
     void hideLoadingDialog();
     void slot_server_data_run_out();
+    void slot_filebtn_click();
 signals:
     void sig_load_history_msg_finish(int oldScrollValue, int oldContentHeight);
     void sig_set_scrollbar_to_bottom();

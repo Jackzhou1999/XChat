@@ -56,5 +56,12 @@
         <file>res/filedir_press.png</file>
         <file>res/filedir_hover.png</file>
         <file>res/filedir.png</file>
+        <file>res/email.png</file>
+        <file>res/password.png</file>
+        <file>res/user.png</file>
+        <file>res/varify.png</file>
+        <file>res/sousuo.png</file>
+        <file>res/information_normal.png</file>
+        <file>res/information.png</file>
     </qresource>
 </RCC>

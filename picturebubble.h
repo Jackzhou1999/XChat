@@ -49,7 +49,8 @@ public:
 
         QLabel* imageLabel = new QLabel(); // 图片
 
-        imageLabel->setPixmap(image.scaled(PIC_MAX_WIDTH, PIC_MAX_HEIGHT, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        const QPixmap image_scale = scalePixmap(image, 120, 180, 120, 180);
+        imageLabel->setPixmap(image_scale);
         imageLabel->setStyleSheet("border-radius: 5px; background-color: black; padding: 0;");
         imageLabel->setContentsMargins(0, 0, 0, 0); // 去掉图片的外边距
         imageLabel->setAlignment(Qt::AlignCenter);
@@ -83,6 +84,40 @@ signals:
     void imageDoubleClicked(const QPixmap& image);
 
 private:
+    QPixmap scalePixmap(const QPixmap &pixmap, int minWidth, int maxWidth, int minHeight, int maxHeight) {
+        // 获取原始宽高
+        int originalWidth = pixmap.width();
+        int originalHeight = pixmap.height();
+
+        // 计算缩放比例
+        float widthRatio = 1.0f;
+        float heightRatio = 1.0f;
+
+        // 根据宽度限制
+        if (originalWidth < minWidth) {
+            widthRatio = float(minWidth) / originalWidth;
+        } else if (originalWidth > maxWidth) {
+            widthRatio = float(maxWidth) / originalWidth;
+        }
+
+        // 根据高度限制
+        if (originalHeight < minHeight) {
+            heightRatio = float(minHeight) / originalHeight;
+        } else if (originalHeight > maxHeight) {
+            heightRatio = float(maxHeight) / originalHeight;
+        }
+
+        // 选择适用的缩放比例，保证比例缩放
+        float scaleFactor = qMax(widthRatio, heightRatio);  // 确保较小的比例不被忽略
+
+        // 按照缩放比例调整尺寸
+        int newWidth = int(originalWidth * scaleFactor);
+        int newHeight = int(originalHeight * scaleFactor);
+
+        // 返回缩放后的图像
+        return pixmap.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+
     QPixmap m_image;
 };
 #endif // PICTUREBUBBLE_H

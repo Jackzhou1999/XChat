@@ -6,11 +6,14 @@
 #include "fileclient.h"
 #include <QTimer>
 #include <QtEndian>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 TcpMgr::TcpMgr(QObject *parent)
     : QObject{parent}
 {
     _complete_recv_flag = true;
+    _sonthread =  std::make_shared<WorkThread>();
     connect(&_socket, &QTcpSocket::connected, this,  [&]() {
            qDebug() << "Connected to server!";
             emit sig_connect_tcp_success(true);
@@ -30,6 +33,7 @@ TcpMgr::TcpMgr(QObject *parent)
         qDebug() << "Error:" << _socket.errorString();
     });
     initTcpHandlers();
+    connect(FileClient::GetInstance().get(), &FileClient::sig_downloadFinished, this, &TcpMgr::slot_notifydownloadfinished);
 
 }
 
@@ -56,9 +60,13 @@ void TcpMgr::initTcpHandlers()
             return;
         }
 
+
+        std::shared_ptr<semaphore> smp(new semaphore());
+
         if(jsonObj.contains("friend_requests")){
             QJsonArray friend_requests = jsonObj["friend_requests"].toArray();
             for (const QJsonValue &value : friend_requests) {
+                auto apply_id = value["id"].toInt();
                 auto sender_id = value["sender_id"].toInt();
                 auto receiver_id = value["receiver_id"].toInt();
                 auto message = value["message"].toString();
@@ -81,7 +89,7 @@ void TcpMgr::initTcpHandlers()
                 } else {
                     updated_at = dateTime2.toString("yyyy-MM-dd HH:mm:ss");
                 }
-                DatabaseManager::insertFriendRequest(sender_id, receiver_id, message, status, created_at, updated_at, rejection_reason, false);
+                DatabaseManager::insertFriendRequest(apply_id, sender_id, receiver_id, message, status, created_at, updated_at, rejection_reason, false);
             }
         }
         if(jsonObj.contains("friend_relationships")){
@@ -136,6 +144,9 @@ void TcpMgr::initTcpHandlers()
                     QString filetype = jsonObj.value("filetype").toString();
                     QString filepath = UserMgr::GetInstance()->getUserHomeDir() + "/" + filename;
                     FileClient::GetInstance()->downloadFile(fileid, filepath);
+
+                    _semaphores[fileid] = smp;
+                    smp->registerTask(1);
 
                     QJsonObject msg;
                     msg["fileid"] = static_cast<int>(fileid);
@@ -199,18 +210,20 @@ void TcpMgr::initTcpHandlers()
                 QString iconPath = UserMgr::GetInstance()->getUserHomeDir() + "/" + iconname;
 
                 FileClient::GetInstance()->downloadFile(iconid, iconPath);
-
+                _semaphores[iconid] = smp;
+                smp->registerTask(1);
                 DatabaseManager::insertUser(uid, name, email, nick, desc, sex, iconPath);
             }
         }
 
-        qDebug() << "###################################################################################";
-        // emit sig_login_tcp_success();
-
-        qDebug() << "login tcp success";
-        QTimer::singleShot(3000, [this](){
+        _sonthread->PostTaskToQueue([this, smp](){
+            smp->waitAllTaskFinish(std::chrono::milliseconds(5000));
             emit sig_login_tcp_success();
         });
+
+        // QTimer::singleShot(3000, [this](){
+        //     emit sig_login_tcp_success();
+        // });
 
     });
 
@@ -238,7 +251,6 @@ void TcpMgr::initTcpHandlers()
         QString jsonString = doc.toJson(QJsonDocument::Indented);
         //发送tcp请求给chat server
         emit sig_send_data(ReqId::ID_HEARTBEAT, jsonString);
-
     });
 
 
@@ -331,9 +343,32 @@ void TcpMgr::initTcpHandlers()
             QJsonObject contentObj = jsonDoc.object();
             // 访问 JSON 对象中的字段
             uint64_t fileid = contentObj["fileid"].toInt();
+            QString filename = contentObj.value("filename").toString();
+            uint64_t filesize = contentObj.value("filesize").toInt();
+            QString filetype = contentObj.value("filetype").toString();
             QString filepath = jsonObj["filelocalpath"].toString();
-            qDebug() << "_handlers.insert(ReqId::ID_MSG_BACK : " << filepath;
+
+            qDebug() << "_handlers.insert(ReqId::ID_MSG_BACK : " << filepath << " " << filename;
             FileClient::GetInstance()->uploadFile(fileid, filepath);
+
+            QString destinationPath = UserMgr::GetInstance()->getUserHomeDir() + "/" + filename;      // 源文件路径
+            QString sourcePath = filepath;   // 目标文件路径
+
+            try {
+                // 复制文件
+                fs::copy(sourcePath.toStdString(), destinationPath.toStdString(), fs::copy_options::overwrite_existing);
+            } catch (const fs::filesystem_error& e) {
+                std::cerr << "文件复制失败: " << e.what() << std::endl;
+            }
+
+
+            QJsonObject msg;
+            msg["fileid"] = static_cast<int>(fileid);
+            msg["filename"] = destinationPath;
+            msg["filesize"] = static_cast<int>(filesize);
+            msg["filetype"] = filetype;
+            QJsonDocument doc(msg);
+            content = doc.toJson(QJsonDocument::Indented);
         }
 
         if(content_type == 3){
@@ -395,6 +430,9 @@ void TcpMgr::initTcpHandlers()
         int uid1 = jsonObj["uid1"].toInt();
         int uid2 = jsonObj["uid2"].toInt();
         int uid = (uid1 == UserMgr::GetInstance()->getUid_int()) ? uid2 : uid1;
+
+        std::shared_ptr<semaphore> smp(new semaphore(0));
+
         if(chat_messages.size()){
             for (const QJsonValue &value : chat_messages) {
                 auto msg_id = value["id"].toInt();
@@ -421,6 +459,9 @@ void TcpMgr::initTcpHandlers()
                     QString filepath = UserMgr::GetInstance()->getUserHomeDir() + "/" + filename;
 
                     FileClient::GetInstance()->downloadFile(fileid, filepath);
+
+                    _semaphores[fileid] = smp;
+                    smp->registerTask(1);
 
                     QJsonObject msg;
                     msg["fileid"] = static_cast<int>(fileid);
@@ -454,10 +495,115 @@ void TcpMgr::initTcpHandlers()
                 DatabaseManager::insertChatMessage(msg_id, sender_id, receiver_id, is_group, content, content_type, status, created_at, updated_at);
             }
 
-            emit sig_history_msg_arrived(uid);
+            _sonthread->PostTaskToQueue([this, smp, uid](){
+                smp->waitAllTaskFinish(std::chrono::milliseconds(5000));
+                emit sig_history_msg_arrived(uid);
+            });
+
+            // emit sig_history_msg_arrived(uid);
         }else{
             emit sig_server_data_run_out();
         }
+    });
+
+    _handlers.insert(ReqId::ID_USER_SEARCH, [this](ReqId id, uint16_t len, QByteArray data){
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if(jsonDoc.isNull()){
+            emit sig_login_tcp_failed(ErrorCode::ERROR_JSON);
+            qDebug() << "fail to create QJsonDocument, is null";
+            return;
+        }
+        QJsonObject jsonObj = jsonDoc.object();
+        QVector<DbUserInfo> infos;
+        if(jsonObj.contains("user")){
+            QJsonArray users = jsonObj["user"].toArray();
+            int count = - users.size();
+            std::cout << "tcpmgr ReqId::ID_USER_SEARCH:" << count << std::endl;
+            std::shared_ptr<semaphore> smp(new semaphore(count));
+            for(const QJsonValue &value : users){
+                auto uid = value["uid"].toInt();
+                auto name = value["name"].toString();
+                auto email = value["email"].toString();
+                auto nick = value["nick"].toString();
+                auto desc = value["desc"].toString();
+                auto sex = value["sex"].toInt();
+                QString icon = value["icon"].toString();
+
+                DbUserInfo info;
+                info.uid = uid;
+                info.name = name;
+                info.email = email;
+                info.nick = nick;
+                QJsonDocument jsonDoc = QJsonDocument::fromJson(icon.toUtf8());
+                // 检查解析是否成功
+                if (jsonDoc.isNull() || (!jsonDoc.isObject() && !jsonDoc.isArray())) {
+                    qDebug() << "Invalid JSON format!";
+                    return;
+                }
+
+                QJsonObject jsonObj = jsonDoc.object();
+                // 访问 JSON 对象中的字段
+                uint64_t iconid = jsonObj.value("fileid").toInt();
+                QString iconname = jsonObj.value("filename").toString();
+                uint64_t iconsize = jsonObj.value("filesize").toInt();
+                QString icontype = jsonObj.value("filetype").toString();
+                QString iconPath = UserMgr::GetInstance()->getUserHomeDir() + "/" + iconname;
+                info.icon = iconPath;
+                infos.push_back(info);
+                _semaphores[iconid] = smp;
+                FileClient::GetInstance()->downloadFile(iconid, iconPath);
+                DatabaseManager::insertUser(uid, name, email, nick, desc, sex, iconPath);
+            }
+            _sonthread->PostTaskToQueue([this, smp, infos](){
+                smp->waitAllTaskFinish(std::chrono::milliseconds(1000));
+                emit sig_searchfinished(infos);
+            });
+
+        }
+
+    });
+
+    _handlers.insert(ReqId::ID_NOTIFY_ADD_FRIEND_RSP, [this](ReqId id, uint16_t len, QByteArray data){
+        Q_UNUSED(len);
+        std::cout << "_handlers.insert(ReqId::ID_HEARTBEAT" << std::endl;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if(jsonDoc.isNull()){
+            emit sig_login_tcp_failed(ErrorCode::ERROR_JSON);
+            qDebug() << "fail to create QJsonDocument, is null";
+            return;
+        }
+        QJsonObject value = jsonDoc.object();
+        auto apply_id = value["id"].toInt();
+        auto sender_id = value["sender_id"].toInt();
+        auto receiver_id = value["receiver_id"].toInt();
+        auto message = value["message"].toString();
+        auto status = value["status"].toInt();
+        auto created_at = value["created_at"].toString();
+        auto updated_at = value["updated_at"].toString();
+        auto rejection_reason = "";
+
+        // 检查或格式化
+        QDateTime dateTime = QDateTime::fromString(created_at, "yyyy-MM-dd HH:mm:ss");
+        if (!dateTime.isValid()) {
+            qDebug() << "Invalid datetime format";
+        } else {
+            created_at = dateTime.toString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        QDateTime dateTime2 = QDateTime::fromString(updated_at, "yyyy-MM-dd HH:mm:ss");
+        if (!dateTime2.isValid()) {
+            qDebug() << "Invalid datetime format";
+        } else {
+            updated_at = dateTime2.toString("yyyy-MM-dd HH:mm:ss");
+        }
+        DatabaseManager::insertFriendRequest(apply_id, sender_id, receiver_id, message, status, created_at, updated_at, rejection_reason, false);
+
+        DbUserInfo receiver_info = DatabaseManager::getUserInfoByUid(receiver_id).value();
+
+        MyApplyRspInfo info(receiver_id, receiver_info.name, receiver_info.icon, status);
+
+        emit sig_updatefriendrequest(info);
     });
 }
 
@@ -505,7 +651,7 @@ void TcpMgr::slot_handle_msg(ReqId msg_id, uint16_t msg_len, QByteArray msg)
 
     auto iter = _handlers.find(msg_id);
     if(iter == _handlers.end()){
-        qDebug() << "cant find responding handler";
+        qDebug() << "cant find responding handler:" << msg_id;
         return;
     }
     iter.value()(msg_id, msg_len, msg);
@@ -540,5 +686,13 @@ void TcpMgr::slot_new_msg_arrived(uint64_t fileid){
     if(_file_to_id.find(fileid) != _file_to_id.end()){
         emit sig_new_msg_arrived(_file_to_id[fileid]);
         _file_to_id.remove(fileid);
+    }
+}
+
+void TcpMgr::slot_notifydownloadfinished(int fileid)
+{
+    if(_semaphores.find(fileid) != _semaphores.end()){
+        _semaphores[fileid]->finishTask(1);
+        _semaphores.remove(fileid);
     }
 }

@@ -87,6 +87,10 @@ struct DbUserInfo {
     QString desc;
     int sex;
     QString icon;
+
+    bool operator ==(const DbUserInfo& other){
+        return uid == other.uid;
+    }
 };
 
 

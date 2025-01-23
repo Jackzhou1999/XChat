@@ -9,6 +9,7 @@ StateWidget::StateWidget(QWidget *parent):QWidget(parent),_curstate(ClickLbState
 {
     setCursor(Qt::PointingHandCursor);
     AddRedPoint();
+    setContentsMargins(0,0,0,0);
 }
 
 void StateWidget::SetState(QString normal, QString hover, QString select)
@@ -53,19 +54,43 @@ void StateWidget::SetSelected(bool bselected)
 
 void StateWidget::AddRedPoint()
 {
-    _red_point = new QLabel();
+    _red_point = new QLabel(this);
     _red_point->setObjectName("red_point");
-    QVBoxLayout* layout2 = new QVBoxLayout;
-    _red_point->setAlignment(Qt::AlignCenter);
-    layout2->addWidget(_red_point);
-    layout2->setContentsMargins(0,0,0,0);
-    this->setLayout(layout2);
+    _red_point->setFixedSize(8, 8);
+
+    _red_point->setStyleSheet(
+        "background-color: red; "
+        "color: white; "
+        "border-radius: 4px; "
+        "font-size: 11px;"
+        "font-weight: bold;"
+        "text-align: center;"
+        );
+
     _red_point->setVisible(false);
+
 }
 
-void StateWidget::ShowRedPoint(bool show)
+void StateWidget::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+    updateLabelPosition(); // 窗口大小变化时，更新 QLabel 位置
+}
+
+
+void StateWidget::updateLabelPosition() {
+    int x = width() - _red_point->width();
+    int y = 0;
+    _red_point->move(x, y);
+}
+
+void StateWidget::ShowRedPoint()
 {
     _red_point->setVisible(true);
+}
+
+void StateWidget::HideRedPoint()
+{
+    _red_point->setVisible(false);
 }
 
 void StateWidget::paintEvent(QPaintEvent *event)
@@ -85,6 +110,7 @@ void StateWidget::mousePressEvent(QMouseEvent *event)
             setProperty("state",_selected);
         }
         repolish(this);
+        HideRedPoint();
         update();
         emit clicked();
         QWidget::mousePressEvent(event);
